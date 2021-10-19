@@ -1,0 +1,5 @@
+START
+DEF a : NUMBER
+ASSIGN a : 10
+PRINT ( a )
+FINISH

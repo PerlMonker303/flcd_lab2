@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <String>
+#include <fstream>
 
 struct Node {
 	std::string value;
@@ -25,6 +26,7 @@ public:
 	void resize();
 	std::vector<std::string> getAllElements();
 	void print();
+	void toFile(std::string filename);
 };
 /*
 // SymbolTable tests

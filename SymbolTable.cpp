@@ -179,3 +179,25 @@ void SymbolTable::print() {
 
 	std::cout << "[... done]\n";
 }
+
+void SymbolTable::toFile(std::string filename) {
+	std::ofstream file(filename);
+	file << "Symbol table based on hash-map with separate chaining conflict resolution\n\n";
+	for (int i = 0; i < this->capacity; i++) {
+		file << i << " ";
+		if (i < 10) {
+			file << ' ';
+		}
+		file << ": [";
+		Node* current = this->elems[i];
+		while (current) {
+			file << current->value;
+			if (current->next) {
+				file << ' ';
+			}
+			current = current->next;
+		}
+		file << "]\n";
+	}
+	file.close();
+}
