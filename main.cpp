@@ -8,15 +8,15 @@
 #include <assert.h>
 
 // Questions:
-// - in the file with our program's source code, may we add a space between all tokens?
+// - none yet
 
 // Todo:
-// - read tokens char by char and check for them in the lists
-// - read from rules file
+// - write the documentation
+// - work with () paranthesis
 
 int main()
 {
-    Compiler* compiler = new Compiler("token.in", "syntax.in", "p1.in");
+    Compiler* compiler = new Compiler("token.in", "syntax.in", "p2.in");
     compiler->displayCodes();
     compiler->scan();
     // compiler->displayPif();

@@ -18,6 +18,7 @@ private:
     SymbolTable* symbolTable = new SymbolTable(20);
     std::vector<std::string> codes; // code of token from position i is exactly i
 	std::vector<PifPair> pif;
+    std::vector<char> alphabet;
     std::vector<std::string> reservedWords;
     std::vector<std::string> separators;
     std::vector<std::string> operators;
@@ -27,10 +28,7 @@ public:
     Compiler(std::string tokensPath, std::string syntaxPath, std::string programPath);
     void readTokens();
     void readRules();
-    std::vector<std::string> splitString(std::string str, char delim);
-    bool findInVector(std::vector<std::string> vec, std::string elem);
-    std::string readNextToken(std::ifstream& f, bool& isNewLine, int currentLine);
-    std::string readNextTokenV2(std::ifstream& f, bool& isNewLine);
+    std::string readNextToken(std::ifstream& f, bool& isNewLine, int currentLine, char& reachedSeparator, std::string& reachedOperator, std::string& lookedAhead);
     void scan();
     void displayCodes();
     void displayPif();
@@ -48,6 +46,7 @@ public:
     bool getIsOperator(std::string token);
     bool getIsIdentifier(std::string token);
     bool getIsConstant(std::string token);
+    bool getIsInAlphabet(char c);
     bool canBeNumber(std::string str);
     bool getHasError();
 };

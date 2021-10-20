@@ -1,4 +1,5 @@
 #include "Compiler.h"
+#include "Helper.h"
 
 Compiler::Compiler(std::string tokensPath, std::string syntaxPath, std::string programPath) {
     this->tokensPath = tokensPath;
@@ -26,9 +27,9 @@ void Compiler::readTokens() {
     std::getline(file, operatorsString);
     std::getline(file, separatorsString);
 
-    this->reservedWords = this->splitString(reservedWordsString, ' ');
-    this->operators = this->splitString(operatorsString, ' ');
-    this->separators = this->splitString(separatorsString, ' ');
+    this->reservedWords = Helper::splitString(reservedWordsString, ' ');
+    this->operators = Helper::splitString(operatorsString, ' ');
+    this->separators = Helper::splitString(separatorsString, ' ');
 
     // addings reserved words, operators and separators to codes vector
     std::cout << "[Codifying reserved words, operators and separators ...]\n";
@@ -50,33 +51,49 @@ void Compiler::readRules() {
     // to do - how to interpret rules?
 }
 
-std::vector<std::string> Compiler::splitString(std::string str, char delim) {
-    std::vector<std::string> result;
-    std::istringstream iss(str);
-    std::string item;
-    while (std::getline(iss, item, delim)) {
-        result.push_back(item);
-    }
-    return result;
-}
-
-bool Compiler::findInVector(std::vector<std::string> vec, std::string elem) {
-    for (auto v : vec) {
-        if (v == elem) {
-            return true;
-        }
-    }
-    return false;
-}
-
-std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int currentLine) {
+std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int currentLine, char& reachedSeparator, std::string& reachedOperator, std::string& lookedAhead) {
     std::string token = "";
     char ch;
     bool isChar = false;
     bool foundEndCharQuote = false;
     bool isString = false;
     bool foundEndStringQuote = false;
+    bool foundStartSquareBracket = false;
+    bool foundEndSquareBracket = false;
+    if (lookedAhead != "") {
+        if (lookedAhead != " ") {
+            token = lookedAhead;
+        }
+        lookedAhead = "";
+    }
     while (file >> std::noskipws >> ch) {
+        if (this->getIsSeparator(std::string(1, ch))) {
+            reachedSeparator = ch;
+            return token;
+        }
+        if (this->getIsOperator(std::string(1, ch))) {
+            reachedOperator = ch;
+            if (ch == '+' || ch == '-') {
+                char prevChar = ch;
+                file >> std::noskipws >> ch;
+                lookedAhead = ch;
+                if (ch == '0') { // invalid -0, +0
+                    token += prevChar;
+                    token += ch;
+                    this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` is invalid.]\n");
+                }
+            }
+            if (ch == '<' || ch == '>') {
+                char prevChar = ch;
+                file >> std::noskipws >> ch;
+                lookedAhead = ch;
+                if (ch == '=') {
+                    reachedOperator += ch;
+                    lookedAhead = "";
+                }
+            }
+            return token;
+        }
         if (ch == '"') {
             if (isString == false) {
                 isString = true;
@@ -113,7 +130,10 @@ std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int cu
                 token += " ";
                 continue;
             }
-            if (isChar && !foundEndCharQuote) {
+            if (isChar && token.length() > 3) {
+                this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` invalid character format.]\n");
+            }
+            else if (isChar && !foundEndCharQuote) {
                 this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` is missing a closing '.]\n");
             }
             return token;
@@ -127,62 +147,46 @@ std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int cu
         this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` is missing a closing '.]\n");
     }
     return token;
-
-    // check for strings
-}
-
-std::string Compiler::readNextTokenV2(std::ifstream& file, bool& isNewLine) {
-    // improvements:
-    // - stop building a token once hitting a separator character
-    std::string token = "";
-    char ch;
-    std::string chAsString;
-    while (file >> std::noskipws >> ch) {
-        chAsString = ch;
-        if (this->getIsSeparator(chAsString) || ch == ' ' || ch == '\n') {
-            if (ch == '\n') {
-                isNewLine = true;
-            }
-            if (this->getIsSeparator(chAsString)) {
-                if (token == "") {
-                    return chAsString;
-                }
-            }
-            // to fix the "a)" situation, use look ahead when you are at "a" by keeping two character buffers
-            // current and previous
-            return token;
-        }
-        else {
-            token += ch;
-        }
-        if (this->getIsReservedWord(token)) {
-            return token;
-        }
-        if (this->getIsOperator(token)) {
-            // to do: lookahead
-            return token;
-        }
-    }
-    return token;
 }
 
 void Compiler::scan() {
     std::cout << "[Scanning ...]\n";
     std::ifstream file(this->programPath);
     std::string token;
+    std::string lookedAhead = "";
     bool isNewLine = false;
     int currentLine = 1;
+    char reachedSeparator = 'x'; // default value, not a separator
+    std::string reachedOperator = "x"; // default value, not an operator
     while (true) {
+        if (reachedSeparator != 'x') {
+            token = reachedSeparator;
+            reachedSeparator = 'x';
+        }
+        else if (reachedOperator != "x") {
+            token = reachedOperator;
+            reachedOperator = "x";
+        }
+        else {
+            token = this->readNextToken(file, isNewLine, currentLine, reachedSeparator, reachedOperator, lookedAhead);
+        }
+
         if (this->getHasError()) {
             break;
         }
-        token = this->readNextToken(file, isNewLine, currentLine);
+
         if (file.eof()) {
             break;
         }
-        if (token == "") {
+
+        if (token == "" || token == " ") {
+            if (isNewLine) {
+                currentLine++;
+                isNewLine = false;
+            }
             continue;
         }
+
         std::cout << token << " on line " << currentLine <<  '\n';
 
         if (this->getIsReservedWord(token) || this->getIsSeparator(token) || this->getIsOperator(token)) {
@@ -228,6 +232,7 @@ void Compiler::scan() {
                 this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` could not be classified.]\n");
             }
         }
+
         if (isNewLine) {
             currentLine++;
             isNewLine = false;
@@ -252,13 +257,13 @@ void Compiler::displayCodes() {
 
 void Compiler::displayPif() {
     std::cout << "[Pif table ...]\n";
-    std::cout << "Code - (bucket, position in bucket)\n";
+    std::cout << "Code - (bucket, position in bucket) - Keyword/Character\n";
     for (int i = 0; i < this->pif.size(); i++) {
         std::cout << this->pif[i].code << "   ";
         if (this->pif[i].code < 10) {
             std::cout << ' ';
         }
-        std::cout << '(' << this->pif[i].value.first << ',' << this->pif[i].value.second << ')' << '\n';
+        std::cout << '(' << this->pif[i].value.first << ',' << this->pif[i].value.second << ")   " << this->codes[this->pif[i].code] << '\n';
     }
     std::cout << "[... done]\n";
 }
@@ -276,13 +281,13 @@ void Compiler::writeToFiles(std::string pifFileName, std::string stFileName, std
     this->symbolTable->toFile(stFileName);
 
     std::ofstream file(pifFileName);
-    file << "Code - (bucket, position in bucket)\n";
+    file << "Code - (bucket, position in bucket) - Keyword/Character\n";
     for (int i = 0; i < this->pif.size(); i++) {
         file << this->pif[i].code << "   ";
         if (this->pif[i].code < 10) {
             file << ' ';
         }
-        file << '(' << this->pif[i].value.first << ',' << this->pif[i].value.second << ')' << '\n';
+        file << '(' << this->pif[i].value.first << ',' << this->pif[i].value.second << ")   " << this->codes[this->pif[i].code] << '\n';
     }
     
     std::ofstream file1(correctnessFileName);
@@ -320,21 +325,32 @@ std::vector<std::string> Compiler::getOperators() {
 }
 
 bool Compiler::getIsReservedWord(std::string token) {
-    return this->findInVector(this->reservedWords, token);
+    return Helper::findInVector(this->reservedWords, token);
 }
 
 bool Compiler::getIsSeparator(std::string token) {
-    return this->findInVector(this->separators, token);
+    return Helper::findInVector(this->separators, token);
 }
 
 bool Compiler::getIsOperator(std::string token) {
-    return this->findInVector(this->operators, token);
+    return Helper::findInVector(this->operators, token);
 }
 
 bool Compiler::getIsIdentifier(std::string token) {
-    // to do
-    // 2A should not be an identifier
-    // or unknown chars $
+    if (token.empty()) {
+        return false;
+    }
+    int lastPosition = token.size() - 1;
+    // checking for unknown characters
+    for (char& c : token) {
+        if (!this->getIsInAlphabet(c)) {
+            return false;
+        }
+    }
+    // identifiers must start with characters
+    if (!((token[0] >= 'A' && token[0] <= 'Z') || (token[0] >= 'a' && token[0] <= 'z'))) {
+        return false;
+    }
     return true;
 }
 
@@ -342,18 +358,52 @@ bool Compiler::getIsConstant(std::string token) {
     if (token.empty()) {
         return false;
     }
-    // check for 'aa'
-    if (token[0] == '\'' || token[0] == '\"' || canBeNumber(token))
-    {
+    int lastPosition = token.size() - 1;
+    // check for character
+    if (token[0] == '\'') {
+        if (token.size() != 3) {
+            return false;
+        }
+        if (token[2] != '\'') {
+            return false;
+        }
+        return true;
+    }
+    // check for string
+    else if (token[0] == '\"') {
+        if (token[lastPosition] != '\"') {
+            return false;
+        }
+        if (token.size() == 2) {
+            return false;
+        }
+        return true;
+    }
+    else if (canBeNumber(token)) {
+        return true;
+    }
+    return false;
+}
+
+bool Compiler::getIsInAlphabet(char c) {
+    if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
         return true;
     }
     return false;
 }
 
 bool Compiler::canBeNumber(std::string str) {
-    // shouldn't start with 0
-    // make -12 work
+    bool initialChar = true;
     for (auto ch : str) {
+        if (initialChar) {
+            initialChar = false;
+            if (str[0] == '0' && str.length() > 1) {
+                return false;
+            }
+            if (str[0] == '-') {
+                continue;
+            }
+        }
         if (ch < '0' || ch > '9') {
             return false;
         }
