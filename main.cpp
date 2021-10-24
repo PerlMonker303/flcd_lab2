@@ -7,16 +7,12 @@
 #include "Compiler.h"
 #include <assert.h>
 
-// Questions:
-// - none yet
-
 // Todo:
-// - write the documentation
-// - work with () paranthesis
+// -
 
 int main()
 {
-    Compiler* compiler = new Compiler("token.in", "syntax.in", "p2.in");
+    Compiler* compiler = new Compiler("token.in", "syntax.in", "p3.in");
     compiler->displayCodes();
     compiler->scan();
     // compiler->displayPif();

@@ -340,16 +340,15 @@ bool Compiler::getIsIdentifier(std::string token) {
     if (token.empty()) {
         return false;
     }
-    int lastPosition = token.size() - 1;
+    // identifiers must start with characters
+    if (!((token[0] >= 'A' && token[0] <= 'Z') || (token[0] >= 'a' && token[0] <= 'z'))) {
+        return false;
+    }
     // checking for unknown characters
     for (char& c : token) {
         if (!this->getIsInAlphabet(c)) {
             return false;
         }
-    }
-    // identifiers must start with characters
-    if (!((token[0] >= 'A' && token[0] <= 'Z') || (token[0] >= 'a' && token[0] <= 'z'))) {
-        return false;
     }
     return true;
 }
