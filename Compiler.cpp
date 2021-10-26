@@ -68,11 +68,23 @@ std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int cu
     }
     while (file >> std::noskipws >> ch) {
         if (this->getIsSeparator(std::string(1, ch))) {
+            if (isString) {
+                token += ch;
+                continue;
+            }
             reachedSeparator = ch;
             return token;
         }
         if (this->getIsOperator(std::string(1, ch))) {
+            if (isString) {
+                token += ch;
+                continue;
+            }
             reachedOperator = ch;
+            if (token != "") {
+                //lookedAhead = ch;
+                return token;
+            }
             if (ch == '+' || ch == '-') {
                 char prevChar = ch;
                 file >> std::noskipws >> ch;
@@ -81,6 +93,12 @@ std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int cu
                     token += prevChar;
                     token += ch;
                     this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` is invalid.]\n");
+                }
+                // for negative numbers
+                else if (prevChar == '-' && (ch >= '1' || ch <= '9')) {
+                    token += prevChar;
+                    token += ch;
+                    lookedAhead = ""; // reset
                 }
             }
             if (ch == '<' || ch == '>') {
