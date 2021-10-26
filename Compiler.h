@@ -27,7 +27,6 @@ private:
 public:
     Compiler(std::string tokensPath, std::string syntaxPath, std::string programPath);
     void readTokens();
-    void readRules();
     std::string readNextToken(std::ifstream& f, bool& isNewLine, int currentLine, char& reachedSeparator, std::string& reachedOperator, std::string& lookedAhead);
     void scan();
     void displayCodes();

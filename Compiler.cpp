@@ -10,7 +10,6 @@ Compiler::Compiler(std::string tokensPath, std::string syntaxPath, std::string p
     this->codes.push_back("constant");
 
     this->readTokens();
-    this->readRules();
 }
 
 void Compiler::readTokens() {
@@ -47,10 +46,6 @@ void Compiler::readTokens() {
     file.close();
 }
 
-void Compiler::readRules() {
-    // to do - how to interpret rules?
-}
-
 std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int currentLine, char& reachedSeparator, std::string& reachedOperator, std::string& lookedAhead) {
     std::string token = "";
     char ch;
@@ -68,18 +63,10 @@ std::string Compiler::readNextToken(std::ifstream& file, bool& isNewLine, int cu
     }
     while (file >> std::noskipws >> ch) {
         if (this->getIsSeparator(std::string(1, ch))) {
-            if (isString) {
-                token += ch;
-                continue;
-            }
             reachedSeparator = ch;
             return token;
         }
         if (this->getIsOperator(std::string(1, ch))) {
-            if (isString) {
-                token += ch;
-                continue;
-            }
             reachedOperator = ch;
             if (token != "") {
                 //lookedAhead = ch;
@@ -384,6 +371,14 @@ bool Compiler::getIsConstant(std::string token) {
         if (token[2] != '\'') {
             return false;
         }
+        // checking for unknown characters
+        for (char& c : token) {
+            if (c != '\'') {
+                if (!this->getIsInAlphabet(c)) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
     // check for string
@@ -393,6 +388,14 @@ bool Compiler::getIsConstant(std::string token) {
         }
         if (token.size() == 2) {
             return false;
+        }
+        // checking for unknown characters
+        for (char& c : token) {
+            if (c != ' ' && c!= '\"') {
+                if (!this->getIsInAlphabet(c)) {
+                    return false;
+                }
+            }
         }
         return true;
     }
