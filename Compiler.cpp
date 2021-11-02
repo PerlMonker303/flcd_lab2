@@ -10,6 +10,11 @@ Compiler::Compiler(std::string tokensPath, std::string syntaxPath, std::string p
     this->codes.push_back("constant");
 
     this->readTokens();
+
+    this->parserIdentifiers = new Parser("FA_identifiers.in");
+    this->parserIdentifiers->readFA();
+    this->parserConstants = new Parser("FA_constants.in");
+    this->parserConstants->readFA();
 }
 
 void Compiler::readTokens() {
@@ -305,6 +310,19 @@ void Compiler::writeToFiles(std::string pifFileName, std::string stFileName, std
 
     file1.close();
     file.close();
+}
+
+void Compiler::identifyIdentifiersConstants() {
+    std::vector<std::string> elements = this->symbolTable->getAllElements();
+    for (int i = 0; i < elements.size(); i++) {
+        if (this->getIsIdentifier(elements[i])) {
+            assert(this->parserIdentifiers->verifySequence(elements[i]), true);
+        }
+        else if (this->getIsConstant(elements[i])) {
+            // must check if constant is numerical
+            //assert(this->parserConstants->verifySequence(elements[i]), true);
+        }
+    }
 }
 
 // getters

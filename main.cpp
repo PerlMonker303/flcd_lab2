@@ -12,13 +12,13 @@
 
 int main()
 {
-    Compiler* compiler = new Compiler("token.in", "syntax.in", "p3.in");
+    Compiler* compiler = new Compiler("token.in", "syntax.in", "p1.in");
     compiler->displayCodes();
     compiler->scan();
     // compiler->displayPif();
     compiler->displaySymbolTable();
     compiler->writeToFiles("PIF.out", "ST.out", "result.out");
-
+    compiler->identifyIdentifiersConstants();
     
     /*
     // SymbolTable tests

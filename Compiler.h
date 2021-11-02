@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include "Parser.h"
+#include <assert.h>
 
 struct PifPair {
     int code; // code from codes vector
@@ -23,6 +25,8 @@ private:
     std::vector<std::string> separators;
     std::vector<std::string> operators;
     std::string encounteredError = "";
+    Parser* parserIdentifiers;
+    Parser* parserConstants;
 
 public:
     Compiler(std::string tokensPath, std::string syntaxPath, std::string programPath);
@@ -34,6 +38,7 @@ public:
     void displaySymbolTable();
     void logError(std::string error);
     void writeToFiles(std::string pifFileName, std::string stFileName, std::string correctnessFileName);
+    void identifyIdentifiersConstants();
 
     // getters
     int getCode(std::string token);
