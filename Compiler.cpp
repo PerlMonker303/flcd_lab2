@@ -318,9 +318,9 @@ void Compiler::identifyIdentifiersConstants() {
         if (this->getIsIdentifier(elements[i])) {
             assert(this->parserIdentifiers->verifySequence(elements[i]), true);
         }
-        else if (this->getIsConstant(elements[i])) {
+        else if (this->canBeNumber(elements[i])) {
             // must check if constant is numerical
-            //assert(this->parserConstants->verifySequence(elements[i]), true);
+            assert(this->parserConstants->verifySequence(elements[i]), true);
         }
     }
 }

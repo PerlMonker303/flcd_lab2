@@ -95,10 +95,12 @@ bool Parser::verifySequence(std::string sequence) {
 		std::cout << "|-";
 		currentState = nextState;
 	}
-	std::cout << "(" << currentState << ", epsilon)\n";
+	std::cout << "(" << currentState << ", epsilon) ";
 	if (Helper::findInVector(this->finalStates, currentState)) {
+		std::cout << "where '" << currentState << "' is a final state\n";
 		return true;
 	}
+	std::cout << "where '" << currentState << "' is not a final state\n";
 	return false;
 }
 
