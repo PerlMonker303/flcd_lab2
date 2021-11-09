@@ -13,8 +13,8 @@ Compiler::Compiler(std::string tokensPath, std::string syntaxPath, std::string p
 
     this->parserIdentifiers = new Parser("FA_identifiers.in");
     this->parserIdentifiers->readFA();
-    this->parserConstants = new Parser("FA_constants.in");
-    this->parserConstants->readFA();
+    this->parserNumericalConstants = new Parser("FA_constants.in");
+    this->parserNumericalConstants->readFA();
 }
 
 void Compiler::readTokens() {
@@ -232,7 +232,7 @@ void Compiler::scan() {
                     pifPair.code = 0;
                 }
                 else {
-                    this->logError("[LEXICAL ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` is not an identifier, nor a constant.]\n");
+                    this->logError("[SYNTACTIC ERROR at line " + std::to_string(currentLine) + ": token `" + token + "` is not an identifier, nor a constant.]\n");
                 }
                 
                 pifPair.value = pos;
@@ -312,19 +312,6 @@ void Compiler::writeToFiles(std::string pifFileName, std::string stFileName, std
     file.close();
 }
 
-void Compiler::identifyIdentifiersConstants() {
-    std::vector<std::string> elements = this->symbolTable->getAllElements();
-    for (int i = 0; i < elements.size(); i++) {
-        if (this->getIsIdentifier(elements[i])) {
-            assert(this->parserIdentifiers->verifySequence(elements[i]), true);
-        }
-        else if (this->canBeNumber(elements[i])) {
-            // must check if constant is numerical
-            assert(this->parserConstants->verifySequence(elements[i]), true);
-        }
-    }
-}
-
 // getters
 int Compiler::getCode(std::string token) {
     for (int i = 0; i < this->codes.size(); i++) {
@@ -360,20 +347,25 @@ bool Compiler::getIsOperator(std::string token) {
 }
 
 bool Compiler::getIsIdentifier(std::string token) {
+    /*
     if (token.empty()) {
         return false;
     }
     // identifiers must start with characters
+    
     if (!((token[0] >= 'A' && token[0] <= 'Z') || (token[0] >= 'a' && token[0] <= 'z'))) {
         return false;
     }
+    
     // checking for unknown characters
+    
     for (char& c : token) {
         if (!this->getIsInAlphabet(c)) {
             return false;
         }
     }
-    return true;
+    */
+    return this->parserIdentifiers->verifySequence(token);
 }
 
 bool Compiler::getIsConstant(std::string token) {
@@ -381,7 +373,7 @@ bool Compiler::getIsConstant(std::string token) {
         return false;
     }
     int lastPosition = token.size() - 1;
-    // check for character
+    // character
     if (token[0] == '\'') {
         if (token.size() != 3) {
             return false;
@@ -399,7 +391,7 @@ bool Compiler::getIsConstant(std::string token) {
         }
         return true;
     }
-    // check for string
+    // string
     else if (token[0] == '\"') {
         if (token[lastPosition] != '\"') {
             return false;
@@ -417,6 +409,7 @@ bool Compiler::getIsConstant(std::string token) {
         }
         return true;
     }
+    // numerical constant
     else if (canBeNumber(token)) {
         return true;
     }
@@ -431,6 +424,7 @@ bool Compiler::getIsInAlphabet(char c) {
 }
 
 bool Compiler::canBeNumber(std::string str) {
+    /*
     bool initialChar = true;
     for (auto ch : str) {
         if (initialChar) {
@@ -447,6 +441,8 @@ bool Compiler::canBeNumber(std::string str) {
         }
     }
     return true;
+    */
+    return this->parserNumericalConstants->verifySequence(str);
 }
 
 bool Compiler::getHasError() {

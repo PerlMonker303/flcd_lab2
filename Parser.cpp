@@ -76,8 +76,8 @@ void Parser::readFA() {
 	}
 }
 
-bool Parser::verifySequence(std::string sequence) {
-	std::cout << "[Verifying sequence '" << sequence << "']\n";
+bool Parser::verifySequence(std::string sequence, bool verbose) {
+	if (verbose) { std::cout << "[Verifying sequence '" << sequence << "']\n"; }
 	if (sequence == "") {
 		if (Helper::findInVector(this->finalStates, this->initialState)) {
 			return true;
@@ -86,21 +86,21 @@ bool Parser::verifySequence(std::string sequence) {
 	}
 	std::string currentState = this->initialState;
 	for (int i = 0; i < sequence.size(); i++) {
-		std::cout << "(" << currentState << ", " << sequence.substr(i) << ")";
+		if (verbose) { std::cout << "(" << currentState << ", " << sequence.substr(i) << ")"; }
 		std::string nextState = this->move(currentState, std::string(1, sequence[i]));
 		if (nextState == "") {
-			std::cout << '\n';
+			if (verbose) { std::cout << '\n'; }
 			return false;
 		}
-		std::cout << "|-";
+		if (verbose) { std::cout << "|-"; }
 		currentState = nextState;
 	}
-	std::cout << "(" << currentState << ", epsilon) ";
+	if (verbose) { std::cout << "(" << currentState << ", epsilon) "; }
 	if (Helper::findInVector(this->finalStates, currentState)) {
-		std::cout << "where '" << currentState << "' is a final state\n";
+		if (verbose) { std::cout << "where '" << currentState << "' is a final state\n"; }
 		return true;
 	}
-	std::cout << "where '" << currentState << "' is not a final state\n";
+	if (verbose) { std::cout << "where '" << currentState << "' is not a final state\n"; }
 	return false;
 }
 

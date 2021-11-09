@@ -26,7 +26,7 @@ private:
 public:
 	Parser(std::string faPath);
 	void readFA();
-	bool verifySequence(std::string sequence);
+	bool verifySequence(std::string sequence, bool verbose = false);
 	std::string move(std::string state, std::string symbol);
 	bool checkTransitionExists(Transition t);
 	void displayStates();

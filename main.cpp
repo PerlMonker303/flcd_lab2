@@ -18,7 +18,6 @@ int main()
     // compiler->displayPif();
     compiler->displaySymbolTable();
     compiler->writeToFiles("PIF.out", "ST.out", "result.out");
-    compiler->identifyIdentifiersConstants();
     
     /*
     // SymbolTable tests

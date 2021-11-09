@@ -26,7 +26,7 @@ private:
     std::vector<std::string> operators;
     std::string encounteredError = "";
     Parser* parserIdentifiers;
-    Parser* parserConstants;
+    Parser* parserNumericalConstants;
 
 public:
     Compiler(std::string tokensPath, std::string syntaxPath, std::string programPath);
@@ -38,7 +38,6 @@ public:
     void displaySymbolTable();
     void logError(std::string error);
     void writeToFiles(std::string pifFileName, std::string stFileName, std::string correctnessFileName);
-    void identifyIdentifiersConstants();
 
     // getters
     int getCode(std::string token);
