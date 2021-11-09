@@ -347,24 +347,6 @@ bool Compiler::getIsOperator(std::string token) {
 }
 
 bool Compiler::getIsIdentifier(std::string token) {
-    /*
-    if (token.empty()) {
-        return false;
-    }
-    // identifiers must start with characters
-    
-    if (!((token[0] >= 'A' && token[0] <= 'Z') || (token[0] >= 'a' && token[0] <= 'z'))) {
-        return false;
-    }
-    
-    // checking for unknown characters
-    
-    for (char& c : token) {
-        if (!this->getIsInAlphabet(c)) {
-            return false;
-        }
-    }
-    */
     return this->parserIdentifiers->verifySequence(token);
 }
 
@@ -424,24 +406,6 @@ bool Compiler::getIsInAlphabet(char c) {
 }
 
 bool Compiler::canBeNumber(std::string str) {
-    /*
-    bool initialChar = true;
-    for (auto ch : str) {
-        if (initialChar) {
-            initialChar = false;
-            if (str[0] == '0' && str.length() > 1) {
-                return false;
-            }
-            if (str[0] == '-') {
-                continue;
-            }
-        }
-        if (ch < '0' || ch > '9') {
-            return false;
-        }
-    }
-    return true;
-    */
     return this->parserNumericalConstants->verifySequence(str);
 }
 
