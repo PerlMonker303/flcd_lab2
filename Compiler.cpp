@@ -312,6 +312,31 @@ void Compiler::writeToFiles(std::string pifFileName, std::string stFileName, std
     file.close();
 }
 
+void Compiler::writeToFilesNoCodes(std::string pifFileName, std::string stFileName, std::string correctnessFileName) {
+    this->symbolTable->toFile(stFileName);
+
+    std::ofstream file(pifFileName);
+    file << "Keyword - (bucket, position in bucket)\n";
+    for (int i = 0; i < this->pif.size(); i++) {
+        file << this->codes[this->pif[i].code] << "   ";
+        if (this->pif[i].code < 10) {
+            file << ' ';
+        }
+        file << '(' << this->pif[i].value.first << ',' << this->pif[i].value.second << ")   \n";
+    }
+
+    std::ofstream file1(correctnessFileName);
+    if (this->getHasError()) {
+        file1 << this->encounteredError;
+    }
+    else {
+        file1 << "Lexically correct";
+    }
+
+    file1.close();
+    file.close();
+}
+
 // getters
 int Compiler::getCode(std::string token) {
     for (int i = 0; i < this->codes.size(); i++) {

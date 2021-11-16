@@ -17,7 +17,7 @@ int main()
     compiler->scan();
     // compiler->displayPif();
     compiler->displaySymbolTable();
-    compiler->writeToFiles("PIF.out", "ST.out", "result.out");
+    compiler->writeToFilesNoCodes("PIF.out", "ST.out", "result.out");
     
     /*
     // SymbolTable tests

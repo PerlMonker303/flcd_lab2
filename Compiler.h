@@ -38,6 +38,7 @@ public:
     void displaySymbolTable();
     void logError(std::string error);
     void writeToFiles(std::string pifFileName, std::string stFileName, std::string correctnessFileName);
+    void writeToFilesNoCodes(std::string pifFileName, std::string stFileName, std::string correctnessFileName);
 
     // getters
     int getCode(std::string token);
